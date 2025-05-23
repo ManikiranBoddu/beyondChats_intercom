@@ -18,7 +18,7 @@ const App = () => {
     },
     {
       id: 2,
-      sender: 'You',
+      sender: 'Fin',
       text: 'Hi I am Fin (Bot), may assist with common queries.',
       timestamp: 'Seen · 1min',
       isSelf: true,
@@ -51,7 +51,7 @@ const App = () => {
 
     const newMessage = {
       id: messages.length + 1,
-      sender: 'You',
+      sender: 'Fin (Bot)',
       text: inputText,
       timestamp: 'Just now',
       isSelf: true,
