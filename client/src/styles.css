@@ -1631,3 +1631,18 @@ body {
     height: 100%; /* Fit within right-panel */
   }
 }
+.error-message {
+  color: #d32f2f;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.fin-response .suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #f0f2ff;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
