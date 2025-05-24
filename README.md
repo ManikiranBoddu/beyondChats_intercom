@@ -77,7 +77,7 @@ intercom-replica/
 
 **Deployment**
 The project is deployed on Vercel at:
-https://beyondchatsintercom-7003ii4al-manikirans-projects-21dcde3d.vercel.app/
+https://beyondchatsintercom-449r4jmpq-manikirans-projects-21dcde3d.vercel.app/
 Deploy to Vercel
 
 Install Vercel CLI (if not already installed):
@@ -90,4 +90,4 @@ vercel deploy --prod
 
 
 Verify Deployment:Visit the URL provided by Vercel 
-(https://beyondchatsintercom-7003ii4al-manikirans-projects-21dcde3d.vercel.app/)
+(https://beyondchatsintercom-449r4jmpq-manikirans-projects-21dcde3d.vercel.app/)
