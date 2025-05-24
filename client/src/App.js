@@ -39,7 +39,7 @@ const App = () => {
   const [selectedCategory, setSelectedCategory] = useState('open');
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [finResponse, setFinResponse] = useState(null); // New state for Fin response
+  const [finResponse, setFinResponse] = useState(null); 
   const chatBodyRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -60,8 +60,7 @@ const App = () => {
 
     setMessages([...messages, newMessage]);
     setInputText('');
-    setFinResponse(null); // Clear Fin response when sending a new message
-
+    setFinResponse(null); 
     if (chatBodyRef.current) {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
     }
