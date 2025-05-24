@@ -1,51 +1,98 @@
 const express = require('express');
 const cors = require('cors');
-const apiRoutes = require('./routes/api');
-const fs = require('fs').promises;
-const path = require('path');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
+
+// Simple CORS setup
 app.use(cors());
 app.use(express.json());
 
-// Log all incoming requests
+// Debug middleware
 app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.url}`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
   next();
 });
 
-app.use('/api', apiRoutes);
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
+// Test endpoint
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Backend is running!' });
+  console.log('✅ Test endpoint hit successfully');
+  res.json({ 
+    message: 'Backend is running!',
+    timestamp: new Date().toISOString(),
+    env: {
+      hasGeminiKey: !!process.env.GEMINI_API_KEY,
+      port: process.env.PORT || 5000
+    }
+  });
 });
 
-// Temporary DELETE endpoint
-app.delete('/api/messages/:index', async (req, res) => {
-  console.log(`Handling DELETE /api/messages/${req.params.index}`);
+// The main endpoint
+app.post('/api/ask-fin', async (req, res) => {
+  console.log('✅ /api/ask-fin endpoint hit successfully');
+  console.log('Request body:', req.body);
+  
   try {
-    const index = parseInt(req.params.index);
-    const messagesPath = path.join(__dirname, 'data', 'messages.json');
-    const messages = JSON.parse(await fs.readFile(messagesPath, 'utf8'));
-
-    if (index < 0 || index >= messages.length) {
-      return res.status(400).json({ error: 'Invalid message index' });
+    const { text } = req.body;
+    
+    if (!text) {
+      console.log('❌ No text provided');
+      return res.status(400).json({ error: 'Text is required' });
     }
 
-    messages.splice(index, 1);
-    await fs.writeFile(messagesPath, JSON.stringify(messages, null, 2));
-    res.json(messages);
+    if (!process.env.GEMINI_API_KEY) {
+      console.log('❌ No Gemini API key');
+      return res.status(500).json({ error: 'Gemini API key not configured' });
+    }
+
+    console.log('🤖 Calling Gemini API...');
+    const prompt = `You are Fin, a helpful AI assistant. Analyze this message: "${text}"`;
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    console.log('✅ Gemini API response received');
+    const response = { text: responseText, timestamp };
+    
+    res.json(response);
   } catch (error) {
-    console.error('Error deleting message:', error);
-    res.status(500).json({ error: 'Failed to delete message' });
+    console.error('❌ Error in /api/ask-fin:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch response from Gemini API',
+      details: error.message 
+    });
   }
 });
 
-// Catch-all for 404
-app.use((req, res) => {
-  console.log(`Route not found: ${req.method} ${req.url}`);
-  res.status(404).json({ error: 'Route not found' });
+// Catch all other routes
+app.use('*', (req, res) => {
+  console.log(`❌ Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ 
+    error: 'Route not found',
+    availableRoutes: [
+      'GET /api/test',
+      'POST /api/ask-fin'
+    ]
+  });
 });
 
-app.listen(process.env.PORT || 5000, () => console.log(`Server running on port ${process.env.PORT || 5000}`));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log('🚀 Server starting...');
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log('Available routes:');
+  console.log('GET  /api/test');
+  console.log('POST /api/ask-fin');
+  console.log('Environment:');
+  console.log(`GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? '✅ Set' : '❌ Not set'}`);
+  console.log(`PORT: ${PORT}`);
+  console.log('Watching for requests...');
+});
